@@ -1,0 +1,614 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Continental Supplier Requirements Studio</title>
+  <style>
+    :root {
+      --bg: #f6f3ea;
+      --panel: #fffdf8;
+      --panel-strong: #ffffff;
+      --line: #eadfcb;
+      --text: #1f2937;
+      --muted: #667085;
+      --accent: #d79a18;
+      --accent-strong: #b77907;
+      --accent-soft: #fff3d4;
+      --accent-2: #4d5b67;
+      --ok: #15803d;
+      --warn: #d97706;
+      --err: #dc2626;
+      --shadow: 0 18px 40px rgba(87, 64, 20, 0.08);
+      --radius: 22px;
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: Inter, Segoe UI, Roboto, Arial, sans-serif;
+      color: var(--text);
+      background:
+        radial-gradient(circle at top right, rgba(215,154,24,0.10), transparent 28%),
+        radial-gradient(circle at bottom left, rgba(120, 120, 120, 0.06), transparent 22%),
+        linear-gradient(180deg, #faf7f0 0%, var(--bg) 100%);
+      min-height: 100vh;
+    }
+    .shell {
+      max-width: 1280px;
+      margin: 0 auto;
+      padding: 26px;
+    }
+    .topbar {
+      display: grid;
+      grid-template-columns: 1.3fr 0.9fr;
+      gap: 20px;
+      margin-bottom: 20px;
+    }
+    .hero, .status-card, .card {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+    }
+    .hero {
+      padding: 28px;
+      position: relative;
+      overflow: hidden;
+    }
+    .hero::before {
+      content: "";
+      position: absolute;
+      right: -60px;
+      top: -45px;
+      width: 190px;
+      height: 190px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(215,154,24,0.20), transparent 68%);
+      pointer-events: none;
+    }
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 12px;
+      border-radius: 999px;
+      background: var(--accent-soft);
+      color: var(--accent-strong);
+      border: 1px solid #f1d18a;
+      font-size: 12px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      font-weight: 700;
+      margin-bottom: 14px;
+    }
+    h1 {
+      margin: 0 0 12px;
+      font-size: 38px;
+      line-height: 1.04;
+      letter-spacing: -0.03em;
+    }
+    .subtitle {
+      margin: 0 0 18px;
+      max-width: 64ch;
+      color: var(--muted);
+      line-height: 1.65;
+      font-size: 15px;
+    }
+    .ribbon-row, .quick-links, .examples {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+    .ribbon, .link-btn, .example-chip, .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 13px;
+      border-radius: 14px;
+      border: 1px solid var(--line);
+      background: #fff;
+      color: var(--text);
+      text-decoration: none;
+      font-size: 13px;
+      transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+    }
+    .ribbon strong { color: var(--accent-strong); }
+    .link-btn:hover, .example-chip:hover, button:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 10px 24px rgba(183, 121, 7, 0.10);
+      cursor: pointer;
+    }
+    .status-card {
+      padding: 20px;
+      display: grid;
+      gap: 14px;
+      align-content: start;
+      background: linear-gradient(180deg, #fffdf8, #fff8ec);
+    }
+    .status-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+    }
+    .status-head h2 {
+      margin: 0;
+      font-size: 18px;
+    }
+    .metrics {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+    }
+    .metric {
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      padding: 16px;
+      background: var(--panel-strong);
+    }
+    .metric-label {
+      color: var(--muted);
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-bottom: 8px;
+    }
+    .metric-value {
+      font-size: 27px;
+      font-weight: 700;
+    }
+    .status-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 12px;
+      border-radius: 999px;
+      border: 1px solid var(--line);
+      background: #fff;
+      font-size: 13px;
+    }
+    .dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: var(--warn);
+      box-shadow: 0 0 0 4px rgba(217, 119, 6, 0.12);
+    }
+    .dot.ok { background: var(--ok); box-shadow: 0 0 0 4px rgba(21, 128, 61, 0.12); }
+    .dot.err { background: var(--err); box-shadow: 0 0 0 4px rgba(220, 38, 38, 0.12); }
+    .main {
+      display: grid;
+      grid-template-columns: 360px minmax(0, 1fr);
+      gap: 20px;
+    }
+    .stack { display: grid; gap: 18px; }
+    .card {
+      padding: 20px;
+      background: var(--panel-strong);
+    }
+    .card h2 {
+      margin: 0 0 8px;
+      font-size: 21px;
+    }
+    .card p {
+      margin: 0 0 16px;
+      color: var(--muted);
+      line-height: 1.6;
+      font-size: 14px;
+    }
+    .section-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 14px;
+    }
+    label {
+      display: block;
+      margin-bottom: 8px;
+      font-size: 13px;
+      color: var(--muted);
+      font-weight: 600;
+    }
+    input[type="file"], input[type="number"], textarea {
+      width: 100%;
+      border-radius: 16px;
+      border: 1px solid var(--line);
+      background: #fff;
+      color: var(--text);
+      padding: 12px 14px;
+      font: inherit;
+      outline: none;
+    }
+    textarea {
+      min-height: 134px;
+      resize: vertical;
+      line-height: 1.6;
+    }
+    input:focus, textarea:focus {
+      border-color: #efc45f;
+      box-shadow: 0 0 0 4px rgba(215,154,24,0.12);
+    }
+    .row {
+      display: grid;
+      grid-template-columns: 1fr 132px;
+      gap: 12px;
+    }
+    button {
+      border: 0;
+      border-radius: 16px;
+      padding: 12px 16px;
+      font: inherit;
+      font-weight: 700;
+      color: #fff;
+      background: linear-gradient(135deg, var(--accent), var(--accent-strong));
+      cursor: pointer;
+      transition: transform 0.15s ease, opacity 0.15s ease;
+      box-shadow: 0 12px 24px rgba(183, 121, 7, 0.18);
+    }
+    button.secondary {
+      background: #fff;
+      color: var(--text);
+      border: 1px solid var(--line);
+      box-shadow: none;
+    }
+    button:disabled {
+      opacity: 0.65;
+      cursor: not-allowed;
+      transform: none;
+    }
+    .result, .source-card, .doc-card {
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      background: #fff;
+    }
+    .result {
+      min-height: 220px;
+      padding: 18px;
+      white-space: pre-wrap;
+      overflow-wrap: anywhere;
+      line-height: 1.7;
+    }
+    .result.empty {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      color: var(--muted);
+      background: linear-gradient(180deg, #fffefb, #fff6e8);
+    }
+    .docs-grid, .sources-grid {
+      display: grid;
+      gap: 12px;
+      margin-top: 14px;
+    }
+    .doc-card, .source-card {
+      padding: 14px;
+    }
+    .meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+    .pill {
+      padding: 5px 10px;
+      border-radius: 999px;
+      font-size: 12px;
+      background: var(--accent-soft);
+      color: var(--accent-strong);
+      border-color: #f1d18a;
+    }
+    .helper-list {
+      margin: 0;
+      padding-left: 18px;
+      color: var(--muted);
+      line-height: 1.7;
+      font-size: 14px;
+    }
+    .tiny { font-size: 12px; }
+    .muted { color: var(--muted); }
+    .footer-note {
+      margin-top: 16px;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.6;
+    }
+    @media (max-width: 980px) {
+      .topbar, .main { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 640px) {
+      .shell { padding: 16px; }
+      h1 { font-size: 30px; }
+      .metrics { grid-template-columns: 1fr; }
+      .row { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <section class="topbar">
+      <div class="hero">
+        <div class="eyebrow">Continental supplier requirements demo</div>
+        <h1>Supplier Requirements Studio</h1>
+        <p class="subtitle">
+          Upload a supplier requirements PDF, build a local multimodal index, and ask grounded questions across policy sections, logistics instructions, structured tables, and page-level visual context. This version is configured for the Continental supplier requirements manual.
+        </p>
+        <div class="ribbon-row">
+          <div class="ribbon"><strong>Dataset</strong> Continental manual</div>
+          <div class="ribbon"><strong>Theme</strong> Light industrial UI</div>
+          <div class="ribbon"><strong>Retrieval</strong> Text + table + visual</div>
+        </div>
+      </div>
+
+      <div class="status-card">
+        <div class="status-head">
+          <div>
+            <h2>Runtime summary</h2>
+            <p class="muted" style="margin:6px 0 0">Live backend status and index overview.</p>
+          </div>
+          <button class="secondary" onclick="refreshHealth()">Refresh</button>
+        </div>
+        <div class="metrics">
+          <div class="metric">
+            <div class="metric-label">Status</div>
+            <div class="metric-value" id="statusText">Checking…</div>
+          </div>
+          <div class="metric">
+            <div class="metric-label">Indexed documents</div>
+            <div class="metric-value" id="docCount">0</div>
+          </div>
+          <div class="metric">
+            <div class="metric-label">Index size</div>
+            <div class="metric-value" id="indexSize">0</div>
+          </div>
+          <div class="metric">
+            <div class="metric-label">Uptime (s)</div>
+            <div class="metric-value" id="uptime">0</div>
+          </div>
+        </div>
+        <div class="status-pill"><span class="dot" id="statusDot"></span><span id="statusMessage">Waiting for backend health check…</span></div>
+        <div class="footer-note" id="modelInfo">Models: —</div>
+      </div>
+    </section>
+
+    <section class="main">
+      <div class="stack">
+        <div class="card">
+          <div class="section-head">
+            <div>
+              <h2>System overview</h2>
+              <p>Quick access to the API and the currently exposed endpoints.</p>
+            </div>
+            <button class="secondary" onclick="refreshHealth()">Check</button>
+          </div>
+          <div class="quick-links">
+            <a class="link-btn" href="/docs" target="_blank" rel="noreferrer">Swagger /docs</a>
+            <a class="link-btn" href="/health" target="_blank" rel="noreferrer">Raw /health</a>
+            <a class="link-btn" href="/documents" target="_blank" rel="noreferrer">Raw /documents</a>
+          </div>
+          <div class="footer-note">
+            Recommended flow: start the server, ingest the included Continental PDF once, then run the example questions from the query panel.
+          </div>
+        </div>
+
+        <div class="card">
+          <h2>Ingest a PDF</h2>
+          <p>Upload a supplier requirements manual to parse text, tables, and page-level visual summaries.</p>
+          <label for="pdfFile">Choose PDF</label>
+          <input id="pdfFile" type="file" accept=".pdf" />
+          <button id="ingestBtn" onclick="ingestPdf()">Upload and ingest</button>
+          <div style="margin-top:14px" class="result" id="ingestResult">No ingestion yet.</div>
+        </div>
+
+        <div class="card">
+          <div class="section-head">
+            <div>
+              <h2>Indexed documents</h2>
+              <p>Current documents stored in the local vector index.</p>
+            </div>
+            <button class="secondary" onclick="loadDocuments()">Refresh</button>
+          </div>
+          <div class="docs-grid" id="documentsGrid">
+            <div class="doc-card muted">No documents loaded yet.</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="stack">
+        <div class="card">
+          <h2>Ask a grounded question</h2>
+          <p>Use the included prompts or write your own question against the indexed supplier requirements manual.</p>
+
+          <label for="question">Question</label>
+          <textarea id="question" placeholder="Example: What supplier approval prerequisites does Continental require?"></textarea>
+
+          <div class="examples" style="margin-bottom:14px">
+            <button class="example-chip" onclick="setQuestion('What supplier approval prerequisites does Continental require?')">Approval prerequisites</button>
+            <button class="example-chip" onclick="setQuestion('What mandatory information must be included on the delivery note?')">Delivery note</button>
+            <button class="example-chip" onclick="setQuestion('What emergency plan requirements does Continental place on suppliers?')">Emergency plan</button>
+            <button class="example-chip" onclick="setQuestion('What quality requirements does Continental place on PFMEA and control plans?')">PFMEA and control plan</button>
+          </div>
+
+          <div class="row">
+            <div>
+              <label for="topK">Top K chunks</label>
+              <input id="topK" type="number" min="1" max="10" value="6" />
+            </div>
+            <div style="display:flex; align-items:end">
+              <button id="askBtn" onclick="askQuestion()" style="width:100%">Ask</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="section-head">
+            <div>
+              <h2>Answer</h2>
+              <p class="muted">Grounded response generated from the indexed Continental supplier manual.</p>
+            </div>
+            <div class="tiny muted" id="retrievedInfo">No query run yet.</div>
+          </div>
+          <div id="answerBox" class="result empty">Your answer will appear here after you run a query.</div>
+        </div>
+
+        <div class="card">
+          <div class="section-head">
+            <div>
+              <h2>Sources</h2>
+              <p class="muted">Supporting chunks returned by the API.</p>
+            </div>
+          </div>
+          <div class="sources-grid" id="sourcesGrid">
+            <div class="source-card muted">No sources yet.</div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <script>
+    const statusDot = document.getElementById('statusDot');
+    const statusMessage = document.getElementById('statusMessage');
+
+    function setQuestion(text) {
+      document.getElementById('question').value = text;
+    }
+
+    function prettyJson(obj) {
+      return JSON.stringify(obj, null, 2);
+    }
+
+    async function refreshHealth() {
+      try {
+        const res = await fetch('/health');
+        const data = await res.json();
+        document.getElementById('statusText').textContent = data.status.toUpperCase();
+        document.getElementById('docCount').textContent = data.indexed_documents;
+        document.getElementById('indexSize').textContent = data.index_size;
+        document.getElementById('uptime').textContent = Math.round(data.uptime_seconds);
+        document.getElementById('modelInfo').textContent = `Models: chat ${data.chat_model} · vision ${data.vision_model} · embedding ${data.embedding_model}`;
+        statusDot.className = 'dot ok';
+        statusMessage.textContent = data.model_ready
+          ? 'Backend reachable and API key configured.'
+          : 'Backend reachable. Add a valid OpenAI API key before querying.';
+      } catch (error) {
+        document.getElementById('statusText').textContent = 'ERR';
+        statusDot.className = 'dot err';
+        statusMessage.textContent = 'Could not reach backend health endpoint.';
+        document.getElementById('modelInfo').textContent = String(error);
+      }
+    }
+
+    async function loadDocuments() {
+      const grid = document.getElementById('documentsGrid');
+      grid.innerHTML = '<div class="doc-card muted">Loading…</div>';
+      try {
+        const res = await fetch('/documents');
+        const data = await res.json();
+        const docs = data.documents || [];
+        if (!docs.length) {
+          grid.innerHTML = '<div class="doc-card muted">No documents indexed yet.</div>';
+          return;
+        }
+        grid.innerHTML = docs.map(doc => `
+          <div class="doc-card">
+            <div class="meta">
+              <span class="pill">${doc.filename}</span>
+              <span class="pill">${doc.pages} pages</span>
+              <span class="pill">${doc.chunk_count} chunks</span>
+            </div>
+            <div class="tiny muted">Document ID: ${doc.document_id}</div>
+          </div>
+        `).join('');
+      } catch (error) {
+        grid.innerHTML = `<div class="doc-card">Failed to load documents: ${error}</div>`;
+      }
+    }
+
+    async function ingestPdf() {
+      const resultBox = document.getElementById('ingestResult');
+      const fileInput = document.getElementById('pdfFile');
+      const btn = document.getElementById('ingestBtn');
+
+      if (!fileInput.files.length) {
+        resultBox.textContent = 'Please choose a PDF file first.';
+        return;
+      }
+
+      btn.disabled = true;
+      resultBox.textContent = 'Uploading and ingesting…';
+      try {
+        const formData = new FormData();
+        formData.append('file', fileInput.files[0]);
+        const res = await fetch('/ingest', { method: 'POST', body: formData });
+        const data = await res.json();
+        resultBox.textContent = prettyJson(data);
+        await refreshHealth();
+        await loadDocuments();
+      } catch (error) {
+        resultBox.textContent = `Upload failed: ${error}`;
+      } finally {
+        btn.disabled = false;
+      }
+    }
+
+    async function askQuestion() {
+      const question = document.getElementById('question').value.trim();
+      const topK = Number(document.getElementById('topK').value || 6);
+      const answerBox = document.getElementById('answerBox');
+      const sourcesGrid = document.getElementById('sourcesGrid');
+      const btn = document.getElementById('askBtn');
+      const retrievedInfo = document.getElementById('retrievedInfo');
+
+      if (!question) {
+        answerBox.className = 'result';
+        answerBox.textContent = 'Please enter a question first.';
+        return;
+      }
+
+      btn.disabled = true;
+      answerBox.className = 'result';
+      answerBox.textContent = 'Querying…';
+      sourcesGrid.innerHTML = '<div class="source-card muted">Loading sources…</div>';
+      try {
+        const res = await fetch('/query', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ question, top_k: topK })
+        });
+        const data = await res.json();
+
+        answerBox.textContent = data.answer || prettyJson(data);
+        retrievedInfo.textContent = `${data.retrieved_chunks || 0} chunks retrieved`;
+
+        const sources = data.sources || [];
+        if (!sources.length) {
+          sourcesGrid.innerHTML = '<div class="source-card muted">No source references returned.</div>';
+        } else {
+          sourcesGrid.innerHTML = sources.map(src => `
+            <div class="source-card">
+              <div class="meta">
+                <span class="pill">${src.chunk_type}</span>
+                <span class="pill">Page ${src.page}</span>
+                <span class="pill">${src.filename}</span>
+              </div>
+              <div class="tiny muted" style="margin-bottom:8px">Chunk ID: ${src.chunk_id}</div>
+              <div class="muted">${(src.excerpt || '').replace(/</g, '&lt;').replace(/>/g, '&gt;')}</div>
+            </div>
+          `).join('');
+        }
+      } catch (error) {
+        answerBox.textContent = `Query failed: ${error}`;
+        sourcesGrid.innerHTML = '<div class="source-card muted">No sources available.</div>';
+      } finally {
+        btn.disabled = false;
+      }
+    }
+
+    refreshHealth();
+    loadDocuments();
+  </script>
+</body>
+</html>
