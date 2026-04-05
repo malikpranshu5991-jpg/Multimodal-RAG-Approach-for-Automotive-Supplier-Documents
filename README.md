@@ -1,0 +1,1 @@
+# Multimodal-RAG-Approach-for-Automotive-Supplier-Documents
